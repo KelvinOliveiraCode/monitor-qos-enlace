@@ -1,118 +1,101 @@
 # monitor-qos-enlace
 
-<div align="center">
-
 **English** · [Português (Brasil)](README.md)
 
-</div>
-
-[![Python 3](https://img.shields.io/badge/Python-3.x-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/) [![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat-square&logo=scikit-learn)](https://scikit-learn.org/) [![pandas](https://img.shields.io/badge/pandas-150458?style=flat-square&logo=pandas)](https://pandas.pydata.org/) [![pytest](https://img.shields.io/badge/pytest-0A9EDC?style=flat-square&logo=pytest)](https://docs.pytest.org/) [![MIT License](https://img.shields.io/badge/License-MIT-f4c430?style=flat-square)](LICENSE)
-
-### Projeto funcional ,  monitor-qos-enlace
-
----
+[![Python 3](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](#) [![pytest](https://img.shields.io/badge/pytest-11%20tests-0A9EDC?style=flat-square&logo=pytest)](#) [![MIT License](https://img.shields.io/badge/License-MIT-f4c430?style=flat-square)](#)
 
 ## What it is
 
-Projeto funcional ,  monitor-qos-enlace
+A **link QoS monitor** in pure Python: it continuously pings a target (via the OS `ping` utility through `subprocess`), computes **latency, jitter and packet loss** per cycle, compares them with **configurable thresholds**, raises an **alert** when they are exceeded and writes a **deterministic log** (same input → same output). It is an educational network-monitoring lab.
 
----
+## Status
 
-## Quick Start
+An educational networking lab, working and tested (11 tests).
 
-```bash
-# Clone and enter
-git clone https://github.com/KelvinOliveiraCode/<repo>.git
-cd <repo>
+## Features
 
-# Install dependencies
-# No requirements.txt detected
+- **Ping probing via subprocess** (`probe.py`): runs the system `ping`; a `PingProbe` protocol makes it swappable for tests.
+- **Continuous monitor** (`monitor.py`): measures latency, jitter and loss and raises an alert per cycle.
+- **Configurable thresholds** (`Thresholds`): latency and jitter in ms, loss in %.
+- **Deterministic log** (`log.py`): stable lines with status and alert.
+- **CLI** `monitor-qos-enlace`: target, cycles, interval, count, log file and thresholds.
 
-# Run the project
-python main.py
+## Architecture
 
-# Run tests
-pytest
+A `monitor_qos_enlace` package with `probe` (ping), `monitor` (measuring loop + alert), `log` (recording) and `__main__` (CLI). The probe is a protocol, so a deterministic fake can be injected in tests.
+
+```mermaid
+flowchart LR
+    CLI[__main__.py] --> M[Monitor - loop]
+    M --> P[PingProbe - OS ping]
+    M --> TH[Thresholds - latency/jitter/loss]
+    M --> A[alert when threshold exceeded]
+    M --> L[deterministic log]
 ```
 
-## How it works
+## Stack
 
-Estrutura limpa e modular com separação de responsabilidades.
+- Python ≥ 3.10, stdlib only (subprocess, argparse)
+- pytest (dev)
 
----
+## Repository layout
 
-## Capabilities
+```
+monitor-qos-enlace/
+├── pyproject.toml · BRIEF.md
+├── src/monitor_qos_enlace/
+│   ├── probe.py      # ping via subprocess (swappable protocol)
+│   ├── monitor.py    # continuous measurement + alert
+│   ├── log.py        # deterministic recording
+│   └── __main__.py   # CLI
+├── tests/test_monitor.py
+└── LICENSE          # MIT
+```
 
-| Capacidade | Descrição |
-|------------|-------------|
-| Carregamento de Dados | Auto-download do TensorFlow creditcard.csv (284k transações) com cache local |
-| EDA e Visualização | Distribuição de classes, histogramas de Amount, heatmaps de correlação (matplotlib/seaborn) |
-| Pré-processamento | RobustScaler em Amount/Time, split estratificado, remoção de duplicatas |
-| Balanceamento | SMOTE oversampling (fallback: class_weight="balanced") |
-| Modelagem | LogisticRegression, RandomForest, ExtraTrees com RandomizedSearchCV (StratifiedKFold) |
-| Métricas | Accuracy, Precision, Recall, F1, ROC AUC, Specificity, Confusion Matrix |
-| Seleção | Score ponderado: Recall 40% + F1 30% + Precision 20% + Accuracy 10% |
-| Persistência | Serialização joblib para modelo, scaler e resultados completos |
+## Prerequisites and installation
 
+Python ≥ 3.10. The OS `ping` utility must be available.
 
----
+```bash
+pip install -e .
+```
 
+## How to run
 
+```bash
+monitor-qos-enlace <target> [--ciclos N] [--intervalo S] [--contagem C] \
+  [--log file.log] [--latencia-ms MAX] [--jitter-ms MAX] [--perda-pct MAX]
+```
 
----
+## Tests and quality
 
-## FAQ
+Real command (verified by the agent):
 
-<details>
-<summary><strong>What is this project?</strong></summary>
+```bash
+python -m pytest tests/
+# 11 passed
+```
 
-A Python study/project demonstrating core concepts.
+There is no CI configured in this repository.
 
-</details>
+## Technical decisions and trade-offs
 
-<details>
-<summary><strong>How do I run it?</strong></summary>
+- **Real ping via subprocess** behind a swappable protocol: measures the actual network while staying testable with a deterministic fake.
+- **Zero dependencies (stdlib)**: light and portable.
+- **Deterministic log**: easy to compare and reprocess; in exchange, it does not capture non-deterministic variations.
 
-See [Quick Start](#quick-start) for copy-paste commands.
+## Known limitations and roadmap
 
-</details>
+- Depends on the OS `ping` (ICMP) — may need privileges on some systems.
+- Basic metrics (latency/jitter/loss); no per-packet classification or route tracing.
+- Text log only; no dashboard/chart.
 
-<details>
-<summary><strong>Are there tests?</strong></summary>
+## Development process
 
-No automated tests in this repository.
+An individual project by Kelvin Oliveira, built with orchestrated AI agents and reviewed by the author. The monitor architecture and the review are the author's.
 
-</details>
+## License and author
 
-<details>
-<summary><strong>Can I use this in production?</strong></summary>
+MIT — Copyright (c) 2026 Kelvin Rebelo de Oliveira.
 
-This is a **study/portfolio project**. Review and harden (auth, persistence, monitoring, etc.) before production use.
-
-</details>
-
-
-
----
-
-## Documentation
-
-- **Source Code** ,  Browse the `src/` directory for implementation details
-- **API Reference** ,  Inline docstrings + type hints
-- **Architecture Diagram** ,  See [architecture.mermaid](docs/architecture.mermaid) (if present)
-- **Changelog** ,  [CHANGELOG.md](CHANGELOG.md) (if present)
-- **Contributing** ,  [CONTRIBUTING.md](CONTRIBUTING.md) (if present)
-
-## License
-
-[MIT](LICENSE) ,  Kelvin Oliveira
-
----
-
-<div align="center">
-
-**Built with** · Python 3 + scikit-learn + pandas
-
-**Author** · [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfolio](https://kelvinoliveiracode.github.io/portfolio/)
-
-</div>
+**Author**: [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfolio](https://kelvinoliveiracode.github.io/portfolio/)
